@@ -18,9 +18,9 @@ class Engine
   _initPopulation = (self, callback) ->
     debug 'Initializing population'
 
-    async.until(
-      () -> self.populationPoll.length == self.populationSize
-      (cb) -> self.random_solution_fn((solution)  ->
+    async.times(
+      self.populationSize
+      (n, cb) -> self.random_solution_fn((solution)  ->
         self.populationPoll.push solution
         cb())
       (err) ->
@@ -102,12 +102,13 @@ class Engine
   setRandomSolution: (fn) ->
     @random_solution_fn = fn
 
-  start: (cb) ->
+  start: (callback) ->
     async.series([
       (cb) => _initPopulation(@, cb)
       (cb) => _evolve(@, cb)
     ], =>
-      debug @generationParents
+      debug @generationParents.slice 0, 1
+      callback? @generationParents.slice(0, 1)[0]
     )
 
 module.exports = Engine
