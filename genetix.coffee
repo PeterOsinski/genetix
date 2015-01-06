@@ -41,6 +41,10 @@ class Engine
         callback()
     )
 
+  _breakEvolution = (self) ->
+    if(self.stop_fn?(self.generationParents.slice(0, 1).pop()))
+      true
+
   _startGeneration = (self, callback) ->
 
     self.generation++
@@ -65,6 +69,9 @@ class Engine
         self.generationParents = _.sortBy self.generationResult, 'solution'
           .reverse()
           .slice 0, self.surviveGeneration
+
+        if _breakEvolution(self) == true
+          return callback(true)
 
         for i in [1..self.populationSize]
 
@@ -102,13 +109,18 @@ class Engine
   setRandomSolution: (fn) ->
     @random_solution_fn = fn
 
+  setStop: (fn) ->
+    @stop_fn = fn
+
   start: (callback) ->
     async.series([
       (cb) => _initPopulation(@, cb)
       (cb) => _evolve(@, cb)
     ], =>
-      debug @generationParents.slice 0, 1
-      callback? @generationParents.slice(0, 1)[0]
+      callback? {
+        bestSolution: @generationParents.slice(0, 1).pop()
+        generations: @generation
+      }
     )
 
 module.exports = Engine

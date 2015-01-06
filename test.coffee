@@ -1,7 +1,7 @@
 
 Engine = require './genetix'
 
-t = new Engine 20, 5, 100, 0.2, 0.8
+t = new Engine 100, 10, 15000, 0.15, 0.8
 t.setRandomSolution((cb) ->
   rand = (min, max) ->
     Math.random() * (max - min) + min;
@@ -22,12 +22,31 @@ t.setCrossover((s1, s2) ->
   child
 )
 
+t.setStop (solution) ->
+  if solution.solution > 6000
+    return true
+
+  return false
+
 t.setMutator((solution) ->
 
-  solution.a = 0.05 * Math.random()
-  solution.b = 0.05 * Math.random()
+  if Math.random() < 0.25
+    solution.a *= 1.005
+    solution.b *= 0.995
+  else if Math.random() < 0.5
+    solution.a *= 0.995
+    solution.b *= 1.005
+  else if Math.random() < 0.75
+    solution.a *= 0.995
+    solution.b *= 0.995
+  else
+    solution.a *= 1.005
+    solution.b *= 1.005
+
 
   solution
 )
 
-t.start()
+t.start((result) ->
+  console.log result
+)
