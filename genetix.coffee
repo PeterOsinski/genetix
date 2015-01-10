@@ -14,6 +14,7 @@ class Engine
     @generationResult = []
     @generationParents = []
     @generation = 0
+    @stopped = false
 
   _initPopulation = (self, callback) ->
     debug 'Initializing population'
@@ -34,7 +35,9 @@ class Engine
 
     async.times(
       self.generations
-      (n, cb) -> _startGeneration(self, cb)
+      (n, cb) -> 
+        if not self.stopped
+          _startGeneration(self, cb)
       (err) ->
         debug(err) if err
         debug 'Population evolved'
@@ -51,6 +54,8 @@ class Engine
     self.generationResult = []
     self.generationParents = []
     children = []
+
+    debug 'Starting generation: ' + self.generation
 
     async.eachLimit(self.populationPoll, 1,
       (item, cb) ->
@@ -71,7 +76,8 @@ class Engine
           .slice 0, self.surviveGeneration
 
         if _breakEvolution(self) == true
-          return callback(true)
+          self.stopped = true
+          return callback true
 
         for i in [1..self.populationSize]
 

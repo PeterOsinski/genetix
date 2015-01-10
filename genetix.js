@@ -21,6 +21,7 @@
       this.generationResult = [];
       this.generationParents = [];
       this.generation = 0;
+      this.stopped = false;
     }
 
     _initPopulation = function(self, callback) {
@@ -42,7 +43,9 @@
     _evolve = function(self, callback) {
       debug('Evoluting population');
       return async.times(self.generations, function(n, cb) {
-        return _startGeneration(self, cb);
+        if (!self.stopped) {
+          return _startGeneration(self, cb);
+        }
       }, function(err) {
         if (err) {
           debug(err);
@@ -64,6 +67,7 @@
       self.generationResult = [];
       self.generationParents = [];
       children = [];
+      debug('Starting generation: ' + self.generation);
       return async.eachLimit(self.populationPoll, 1, function(item, cb) {
         return self.fitness_fn(item, function(solution) {
           self.generationResult.push({
@@ -79,6 +83,7 @@
         newPopulation = [];
         self.generationParents = _.sortBy(self.generationResult, 'solution').reverse().slice(0, self.surviveGeneration);
         if (_breakEvolution(self) === true) {
+          self.stopped = true;
           return callback(true);
         }
         for (i = _i = 1, _ref = self.populationSize; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
