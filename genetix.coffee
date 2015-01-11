@@ -33,7 +33,7 @@ class Engine
   _evolve = (self, callback) ->
     debug 'Evoluting population'
 
-    async.times(
+    async.timesSeries(
       self.generations
       (n, cb) -> 
         if not self.stopped
@@ -77,6 +77,7 @@ class Engine
 
         if _breakEvolution(self) == true
           self.stopped = true
+          debug 'Break evolution'
           return callback true
 
         for i in [1..self.populationSize]
@@ -96,6 +97,7 @@ class Engine
 
         self.populationPoll = newPopulation
 
+        debug 'Generation completed: '+ self.generation
         callback()
 
     )

@@ -42,7 +42,7 @@
 
     _evolve = function(self, callback) {
       debug('Evoluting population');
-      return async.times(self.generations, function(n, cb) {
+      return async.timesSeries(self.generations, function(n, cb) {
         if (!self.stopped) {
           return _startGeneration(self, cb);
         }
@@ -84,6 +84,7 @@
         self.generationParents = _.sortBy(self.generationResult, 'solution').reverse().slice(0, self.surviveGeneration);
         if (_breakEvolution(self) === true) {
           self.stopped = true;
+          debug('Break evolution');
           return callback(true);
         }
         for (i = _i = 1, _ref = self.populationSize; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
@@ -100,6 +101,7 @@
           newPopulation.push(child);
         }
         self.populationPoll = newPopulation;
+        debug('Generation completed: ' + self.generation);
         return callback();
       });
     };
