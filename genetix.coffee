@@ -67,6 +67,9 @@ class Engine
           cb()
       )
       (err) ->
+
+        debug 'Population assesed'
+
         firstMax = 0
         secondMax = 0
         newPopulation = []
@@ -79,6 +82,8 @@ class Engine
           self.stopped = true
           debug 'Break evolution'
           return callback true
+
+        debug 'Begin crossover'
 
         for i in [1..self.populationSize]
 

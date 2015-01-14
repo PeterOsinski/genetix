@@ -78,6 +78,7 @@
         });
       }, function(err) {
         var child, firstMax, i, newPopulation, p1, p2, secondMax, _i, _ref;
+        debug('Population assesed');
         firstMax = 0;
         secondMax = 0;
         newPopulation = [];
@@ -87,6 +88,7 @@
           debug('Break evolution');
           return callback(true);
         }
+        debug('Begin crossover');
         for (i = _i = 1, _ref = self.populationSize; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
           p1 = _arrRand(self.generationParents).item;
           p2 = _arrRand(self.generationParents).item;
