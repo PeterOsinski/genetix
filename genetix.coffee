@@ -81,7 +81,7 @@ class Engine
 
         currentGenerationBestSolution = self.generationParents.slice(0, 1).pop()
 
-        debug 'Population best solution: %s', currentGenerationBestSolution
+        debug 'Population best solution: %s', currentGenerationBestSolution.solution
 
         if _breakEvolution(self, currentGenerationBestSolution) == true
           self.stopped = true
