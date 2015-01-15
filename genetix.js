@@ -92,7 +92,7 @@
           return callback(true);
         }
         if (self.onlyBetterPopulation === true && self.previousPopulation.length > 0) {
-          if (currentGenerationBestSolution < self.lastGenerationBestSolution.solution) {
+          if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution) {
             self.populationPoll = self.previousPopulation;
             self.previousPopulation = [];
             debug('Rollback generation');
