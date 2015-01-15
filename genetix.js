@@ -74,7 +74,7 @@
         return self.fitness_fn(item, function(solution) {
           self.generationResult.push({
             item: item,
-            solution: solution
+            solution: parseInt(solution)
           });
           return cb();
         });
@@ -86,6 +86,7 @@
         newPopulation = [];
         self.generationParents = _.sortBy(self.generationResult, 'solution').reverse().slice(0, self.surviveGeneration);
         currentGenerationBestSolution = self.generationParents.slice(0, 1).pop();
+        debug('Population best solution: %s', currentGenerationBestSolution);
         if (_breakEvolution(self, currentGenerationBestSolution) === true) {
           self.stopped = true;
           debug('Break evolution');
