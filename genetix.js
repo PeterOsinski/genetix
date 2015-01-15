@@ -11,15 +11,17 @@
   Engine = (function() {
     var _arrRand, _breakEvolution, _evolve, _initPopulation, _startGeneration;
 
-    function Engine(populationSize, surviveGeneration, generations, mutatePropability, crossoverPropability) {
+    function Engine(populationSize, surviveGeneration, generations, mutatePropability, crossoverPropability, onlyBetterPopulation) {
       this.populationSize = populationSize;
       this.surviveGeneration = surviveGeneration;
       this.generations = generations;
       this.mutatePropability = mutatePropability != null ? mutatePropability : 0.2;
       this.crossoverPropability = crossoverPropability != null ? crossoverPropability : 0.8;
+      this.onlyBetterPopulation = onlyBetterPopulation != null ? onlyBetterPopulation : true;
       this.populationPoll = [];
       this.generationResult = [];
       this.generationParents = [];
+      this.previousPopulation = [];
       this.generation = 0;
       this.stopped = false;
     }
@@ -55,8 +57,8 @@
       });
     };
 
-    _breakEvolution = function(self) {
-      if (typeof self.stop_fn === "function" ? self.stop_fn(self.generationParents.slice(0, 1).pop()) : void 0) {
+    _breakEvolution = function(self, currentGenerationBestSolution) {
+      if (typeof self.stop_fn === "function" ? self.stop_fn(currentGenerationBestSolution) : void 0) {
         return true;
       }
     };
@@ -68,7 +70,7 @@
       self.generationParents = [];
       children = [];
       debug('Starting generation: ' + self.generation);
-      return async.eachLimit(self.populationPoll, 1, function(item, cb) {
+      return async.each(self.populationPoll, function(item, cb) {
         return self.fitness_fn(item, function(solution) {
           self.generationResult.push({
             item: item,
@@ -77,16 +79,29 @@
           return cb();
         });
       }, function(err) {
-        var child, firstMax, i, newPopulation, p1, p2, secondMax, _i, _ref;
+        var child, currentGenerationBestSolution, firstMax, i, newPopulation, p1, p2, secondMax, _i, _ref;
         debug('Population assesed');
         firstMax = 0;
         secondMax = 0;
         newPopulation = [];
         self.generationParents = _.sortBy(self.generationResult, 'solution').reverse().slice(0, self.surviveGeneration);
-        if (_breakEvolution(self) === true) {
+        currentGenerationBestSolution = self.generationParents.slice(0, 1).pop().solution;
+        if (_breakEvolution(self, currentGenerationBestSolution) === true) {
           self.stopped = true;
           debug('Break evolution');
           return callback(true);
+        }
+        if (self.onlyBetterPopulation === true && self.previousPopulation.length > 0) {
+          if (currentGenerationBestSolution < self.lastGenerationBestSolution) {
+            self.populationPoll = self.previousPopulation;
+            self.previousPopulation = [];
+            debug('Rollback generation');
+            self.generation--;
+            callback();
+            return;
+          } else {
+            self.lastGenerationBestSolution = self.generationResult.slice(0, 1).pop().solution;
+          }
         }
         debug('Begin crossover');
         for (i = _i = 1, _ref = self.populationSize; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
@@ -102,6 +117,7 @@
           }
           newPopulation.push(child);
         }
+        self.previousPopulation = self.populationPoll;
         self.populationPoll = newPopulation;
         debug('Generation completed: ' + self.generation);
         return callback();

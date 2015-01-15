@@ -8,11 +8,13 @@ class Engine
     @surviveGeneration
     @generations,
     @mutatePropability = 0.2,
-    @crossoverPropability = 0.8) ->
+    @crossoverPropability = 0.8,
+    @onlyBetterPopulation = true) ->
 
     @populationPoll = []
     @generationResult = []
     @generationParents = []
+    @previousPopulation = []
     @generation = 0
     @stopped = false
 
@@ -44,8 +46,8 @@ class Engine
         callback()
     )
 
-  _breakEvolution = (self) ->
-    if(self.stop_fn?(self.generationParents.slice(0, 1).pop()))
+  _breakEvolution = (self, currentGenerationBestSolution) ->
+    if(self.stop_fn?(currentGenerationBestSolution))
       true
 
   _startGeneration = (self, callback) ->
@@ -57,8 +59,7 @@ class Engine
 
     debug 'Starting generation: ' + self.generation
 
-    async.eachLimit(self.populationPoll, 1,
-      (item, cb) ->
+    async.each(self.populationPoll, (item, cb) ->
         self.fitness_fn(item, (solution) ->
           self.generationResult.push {
             item: item
@@ -78,10 +79,23 @@ class Engine
           .reverse()
           .slice 0, self.surviveGeneration
 
-        if _breakEvolution(self) == true
+        currentGenerationBestSolution = self.generationParents.slice(0, 1).pop().solution
+
+        if _breakEvolution(self, currentGenerationBestSolution) == true
           self.stopped = true
           debug 'Break evolution'
           return callback true
+
+        if self.onlyBetterPopulation is true and self.previousPopulation.length > 0
+          if currentGenerationBestSolution < self.lastGenerationBestSolution
+            self.populationPoll = self.previousPopulation
+            self.previousPopulation = []
+            debug 'Rollback generation'
+            self.generation--
+            callback()
+            return
+          else
+            self.lastGenerationBestSolution = self.generationResult.slice(0, 1).pop().solution
 
         debug 'Begin crossover'
 
@@ -100,6 +114,7 @@ class Engine
 
           newPopulation.push(child)
 
+        self.previousPopulation = self.populationPoll
         self.populationPoll = newPopulation
 
         debug 'Generation completed: '+ self.generation

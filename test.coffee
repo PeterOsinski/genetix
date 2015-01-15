@@ -8,7 +8,11 @@ t.setRandomSolution((cb) ->
 
   cb({ a: rand(0.8, 1), b: rand(0.8, 1) })
 )
-t.setFitness((solution, cb) -> cb(1/(solution.a + solution.b)))
+t.setFitness (solution, cb) -> 
+  setTimeout () ->
+    cb(1/(solution.a + solution.b))
+  , 10
+
 t.setCrossover((s1, s2) ->
   child = {}
 
@@ -23,6 +27,7 @@ t.setCrossover((s1, s2) ->
 )
 
 t.setStop (solution) ->
+  console.log solution
   if solution.solution > 6000
     return true
 
