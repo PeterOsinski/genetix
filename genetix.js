@@ -100,7 +100,7 @@
             callback();
             return;
           } else {
-            self.lastGenerationBestSolution = self.generationResult.slice(0, 1).pop().solution;
+            self.lastGenerationBestSolution = currentGenerationBestSolution.solution;
           }
         }
         debug('Begin crossover');
