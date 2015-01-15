@@ -69,7 +69,7 @@ class Engine
       )
       (err) ->
 
-        debug 'Population assesed'
+        debug 'Population assessed'
 
         firstMax = 0
         secondMax = 0
@@ -79,7 +79,7 @@ class Engine
           .reverse()
           .slice 0, self.surviveGeneration
 
-        currentGenerationBestSolution = self.generationParents.slice(0, 1).pop().solution
+        currentGenerationBestSolution = self.generationParents.slice(0, 1).pop()
 
         if _breakEvolution(self, currentGenerationBestSolution) == true
           self.stopped = true
@@ -87,7 +87,7 @@ class Engine
           return callback true
 
         if self.onlyBetterPopulation is true and self.previousPopulation.length > 0
-          if currentGenerationBestSolution < self.lastGenerationBestSolution
+          if currentGenerationBestSolution < self.lastGenerationBestSolution.solution
             self.populationPoll = self.previousPopulation
             self.previousPopulation = []
             debug 'Rollback generation'

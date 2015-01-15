@@ -80,19 +80,19 @@
         });
       }, function(err) {
         var child, currentGenerationBestSolution, firstMax, i, newPopulation, p1, p2, secondMax, _i, _ref;
-        debug('Population assesed');
+        debug('Population assessed');
         firstMax = 0;
         secondMax = 0;
         newPopulation = [];
         self.generationParents = _.sortBy(self.generationResult, 'solution').reverse().slice(0, self.surviveGeneration);
-        currentGenerationBestSolution = self.generationParents.slice(0, 1).pop().solution;
+        currentGenerationBestSolution = self.generationParents.slice(0, 1).pop();
         if (_breakEvolution(self, currentGenerationBestSolution) === true) {
           self.stopped = true;
           debug('Break evolution');
           return callback(true);
         }
         if (self.onlyBetterPopulation === true && self.previousPopulation.length > 0) {
-          if (currentGenerationBestSolution < self.lastGenerationBestSolution) {
+          if (currentGenerationBestSolution < self.lastGenerationBestSolution.solution) {
             self.populationPoll = self.previousPopulation;
             self.previousPopulation = [];
             debug('Rollback generation');
