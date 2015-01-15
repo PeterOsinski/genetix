@@ -63,7 +63,7 @@ class Engine
         self.fitness_fn(item, (solution) ->
           self.generationResult.push {
             item: item
-            solution: parseInt(solution)
+            solution: parseFloat(solution)
           }
           cb()
       )
@@ -81,7 +81,7 @@ class Engine
 
         currentGenerationBestSolution = self.generationParents.slice(0, 1).pop()
 
-        debug 'Population best solution: %s', currentGenerationBestSolution.solution
+        debug 'Population best solution: %d', currentGenerationBestSolution.solution
 
         if _breakEvolution(self, currentGenerationBestSolution) == true
           self.stopped = true
