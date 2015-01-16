@@ -53,10 +53,8 @@ class Engine
   _assesPopulation = (self, callback) ->
     
     debug 'Assesing population'
-    popLen = self.populationPoll.length
-    completed = 0
     
-    _.each self.populationPoll, (item) ->
+    async.eachLimit self.populationPoll, 1, (item, cb) ->
       
       self.fitness_fn item, (solution) ->
         
@@ -64,12 +62,10 @@ class Engine
           item: item
           solution: parseFloat(solution)
         }
-
-        completed++
-
-        if completed == popLen
-          debug 'Population assessed'
-          callback()
+        cb()
+    , (err) ->    
+      debug 'Population assessed'
+      callback()
 
   _startGeneration = (self, callback) ->
 
@@ -100,7 +96,6 @@ class Engine
         return callback true
 
       if self.onlyBetterPopulation is true
-        console.log currentGenerationBestSolution.solution, self.lastGenerationBestSolution
         if currentGenerationBestSolution.solution < self.lastGenerationBestSolution and self.previousPopulation.length > 0
           self.populationPoll = self.previousPopulation
           self.previousPopulation = []

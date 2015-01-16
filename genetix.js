@@ -64,22 +64,18 @@
     };
 
     _assesPopulation = function(self, callback) {
-      var completed, popLen;
       debug('Assesing population');
-      popLen = self.populationPoll.length;
-      completed = 0;
-      return _.each(self.populationPoll, function(item) {
+      return async.eachLimit(self.populationPoll, 1, function(item, cb) {
         return self.fitness_fn(item, function(solution) {
           self.generationResult.push({
             item: item,
             solution: parseFloat(solution)
           });
-          completed++;
-          if (completed === popLen) {
-            debug('Population assessed');
-            return callback();
-          }
+          return cb();
         });
+      }, function(err) {
+        debug('Population assessed');
+        return callback();
       });
     };
 
@@ -104,7 +100,6 @@
           return callback(true);
         }
         if (self.onlyBetterPopulation === true) {
-          console.log(currentGenerationBestSolution.solution, self.lastGenerationBestSolution);
           if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution && self.previousPopulation.length > 0) {
             self.populationPoll = self.previousPopulation;
             self.previousPopulation = [];
