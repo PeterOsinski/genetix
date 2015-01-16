@@ -9,7 +9,7 @@
   _ = require('lodash');
 
   Engine = (function() {
-    var _arrRand, _breakEvolution, _evolve, _initPopulation, _startGeneration;
+    var _arrRand, _assesPopulation, _breakEvolution, _evolve, _initPopulation, _startGeneration;
 
     function Engine(populationSize, surviveGeneration, generations, mutatePropability, crossoverPropability, onlyBetterPopulation) {
       this.populationSize = populationSize;
@@ -63,6 +63,26 @@
       }
     };
 
+    _assesPopulation = function(self, callback) {
+      var completed, popLen;
+      debug('Assesing population');
+      popLen = self.populationPoll.length;
+      completed = 0;
+      return _.each(self.populationPoll, function(item) {
+        return self.fitness_fn(item, function(solution) {
+          self.generationResult.push({
+            item: item,
+            solution: parseFloat(solution)
+          });
+          completed++;
+          if (completed === popLen) {
+            debug('Population assessed');
+            return callback();
+          }
+        });
+      });
+    };
+
     _startGeneration = function(self, callback) {
       var children;
       self.generation++;
@@ -70,17 +90,8 @@
       self.generationParents = [];
       children = [];
       debug('Starting generation: ' + self.generation);
-      return async.each(self.populationPoll, function(item, cb) {
-        return self.fitness_fn(item, function(solution) {
-          self.generationResult.push({
-            item: item,
-            solution: parseFloat(solution)
-          });
-          return cb();
-        });
-      }, function(err) {
+      return _assesPopulation(self, function() {
         var child, currentGenerationBestSolution, firstMax, i, newPopulation, p1, p2, secondMax, _i, _ref;
-        debug('Population assessed');
         firstMax = 0;
         secondMax = 0;
         newPopulation = [];
@@ -92,18 +103,18 @@
           debug('Break evolution');
           return callback(true);
         }
-        if (self.onlyBetterPopulation === true && self.previousPopulation.length > 0) {
-          if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution) {
+        if (self.onlyBetterPopulation === true) {
+          console.log(currentGenerationBestSolution.solution, self.lastGenerationBestSolution);
+          if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution && self.previousPopulation.length > 0) {
             self.populationPoll = self.previousPopulation;
             self.previousPopulation = [];
             debug('Rollback generation');
             self.generation--;
             callback();
             return;
-          } else {
-            self.lastGenerationBestSolution = currentGenerationBestSolution.solution;
           }
         }
+        self.lastGenerationBestSolution = currentGenerationBestSolution.solution;
         debug('Begin crossover');
         for (i = _i = 1, _ref = self.populationSize; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
           p1 = _arrRand(self.generationParents).item;

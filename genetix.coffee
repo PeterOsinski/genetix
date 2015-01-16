@@ -50,6 +50,27 @@ class Engine
     if(self.stop_fn?(currentGenerationBestSolution))
       true
 
+  _assesPopulation = (self, callback) ->
+    
+    debug 'Assesing population'
+    popLen = self.populationPoll.length
+    completed = 0
+    
+    _.each self.populationPoll, (item) ->
+      
+      self.fitness_fn item, (solution) ->
+        
+        self.generationResult.push {
+          item: item
+          solution: parseFloat(solution)
+        }
+
+        completed++
+
+        if completed == popLen
+          debug 'Population assessed'
+          callback()
+
   _startGeneration = (self, callback) ->
 
     self.generation++
@@ -59,70 +80,59 @@ class Engine
 
     debug 'Starting generation: ' + self.generation
 
-    async.each(self.populationPoll, (item, cb) ->
-        self.fitness_fn(item, (solution) ->
-          self.generationResult.push {
-            item: item
-            solution: parseFloat(solution)
-          }
-          cb()
-      )
-      (err) ->
+    _assesPopulation self, () ->
 
-        debug 'Population assessed'
+      firstMax = 0
+      secondMax = 0
+      newPopulation = []
 
-        firstMax = 0
-        secondMax = 0
-        newPopulation = []
+      self.generationParents = _.sortBy self.generationResult, 'solution'
+        .reverse()
+        .slice 0, self.surviveGeneration
 
-        self.generationParents = _.sortBy self.generationResult, 'solution'
-          .reverse()
-          .slice 0, self.surviveGeneration
+      currentGenerationBestSolution = self.generationParents.slice(0, 1).pop()
 
-        currentGenerationBestSolution = self.generationParents.slice(0, 1).pop()
+      debug 'Population best solution: %d', currentGenerationBestSolution.solution
 
-        debug 'Population best solution: %d', currentGenerationBestSolution.solution
+      if _breakEvolution(self, currentGenerationBestSolution) == true
+        self.stopped = true
+        debug 'Break evolution'
+        return callback true
 
-        if _breakEvolution(self, currentGenerationBestSolution) == true
-          self.stopped = true
-          debug 'Break evolution'
-          return callback true
+      if self.onlyBetterPopulation is true
+        console.log currentGenerationBestSolution.solution, self.lastGenerationBestSolution
+        if currentGenerationBestSolution.solution < self.lastGenerationBestSolution and self.previousPopulation.length > 0
+          self.populationPoll = self.previousPopulation
+          self.previousPopulation = []
+          debug 'Rollback generation'
+          self.generation--
+          callback()
+          return
 
-        if self.onlyBetterPopulation is true and self.previousPopulation.length > 0
-          if currentGenerationBestSolution.solution < self.lastGenerationBestSolution
-            self.populationPoll = self.previousPopulation
-            self.previousPopulation = []
-            debug 'Rollback generation'
-            self.generation--
-            callback()
-            return
-          else
-            self.lastGenerationBestSolution = currentGenerationBestSolution.solution
+      self.lastGenerationBestSolution = currentGenerationBestSolution.solution
 
-        debug 'Begin crossover'
+      debug 'Begin crossover'
 
-        for i in [1..self.populationSize]
+      for i in [1..self.populationSize]
 
-          p1 = _arrRand(self.generationParents).item
-          p2 = _arrRand(self.generationParents).item
+        p1 = _arrRand(self.generationParents).item
+        p2 = _arrRand(self.generationParents).item
 
-          if Math.random() <= self.crossoverPropability
-            child = self.crossover_fn p1, p2
-          else
-            child = p1
+        if Math.random() <= self.crossoverPropability
+          child = self.crossover_fn p1, p2
+        else
+          child = p1
 
-          if Math.random() <= self.mutatePropability
-            child = self.mutator_fn(child)
+        if Math.random() <= self.mutatePropability
+          child = self.mutator_fn(child)
 
-          newPopulation.push(child)
+        newPopulation.push(child)
 
-        self.previousPopulation = self.populationPoll
-        self.populationPoll = newPopulation
+      self.previousPopulation = self.populationPoll
+      self.populationPoll = newPopulation
 
-        debug 'Generation completed: '+ self.generation
-        callback()
-
-    )
+      debug 'Generation completed: '+ self.generation
+      callback()
 
   _arrRand = (arr) ->
     arr[Math.floor(Math.random() * arr.length)]
