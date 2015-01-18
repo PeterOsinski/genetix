@@ -58,7 +58,7 @@
     };
 
     _breakEvolution = function(self, currentGenerationBestSolution) {
-      if (typeof self.stop_fn === "function" ? self.stop_fn(currentGenerationBestSolution) : void 0) {
+      if (typeof self.stop_fn === "function" ? self.stop_fn(currentGenerationBestSolution, self.generation) : void 0) {
         return true;
       }
     };

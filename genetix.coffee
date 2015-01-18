@@ -47,7 +47,7 @@ class Engine
     )
 
   _breakEvolution = (self, currentGenerationBestSolution) ->
-    if(self.stop_fn?(currentGenerationBestSolution))
+    if(self.stop_fn?(currentGenerationBestSolution, self.generation))
       true
 
   _assesPopulation = (self, callback) ->
