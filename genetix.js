@@ -24,6 +24,8 @@
       this.previousPopulation = [];
       this.generation = 0;
       this.stopped = false;
+      this.lastSolution = 0;
+      this.generationsWithoutChange = 0;
     }
 
     _initPopulation = function(self, callback) {
@@ -58,9 +60,13 @@
     };
 
     _breakEvolution = function(self, currentGenerationBestSolution) {
-      if (typeof self.stop_fn === "function" ? self.stop_fn(currentGenerationBestSolution, self.generation) : void 0) {
-        return true;
+      if (typeof self.stop_fn === "function" ? self.stop_fn(currentGenerationBestSolution, self.generationsWithoutChange) : void 0) {
+        true;
       }
+      if (self.lastSolution === currentGenerationBestSolution.solution) {
+        self.generationsWithoutChange++;
+      }
+      return self.lastSolution = currentGenerationBestSolution.solution;
     };
 
     _assesPopulation = function(self, callback) {

@@ -18,6 +18,9 @@ class Engine
     @generation = 0
     @stopped = false
 
+    @lastSolution = 0
+    @generationsWithoutChange = 0
+
   _initPopulation = (self, callback) ->
     debug 'Initializing population'
 
@@ -47,8 +50,13 @@ class Engine
     )
 
   _breakEvolution = (self, currentGenerationBestSolution) ->
-    if(self.stop_fn?(currentGenerationBestSolution, self.generation))
+    if(self.stop_fn?(currentGenerationBestSolution, self.generationsWithoutChange))
       true
+      
+    if self.lastSolution == currentGenerationBestSolution.solution
+      self.generationsWithoutChange++
+
+    self.lastSolution = currentGenerationBestSolution.solution
 
   _assesPopulation = (self, callback) ->
     
