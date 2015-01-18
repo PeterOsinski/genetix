@@ -65,6 +65,8 @@
       }
       if (self.lastSolution === currentGenerationBestSolution.solution) {
         self.generationsWithoutChange++;
+      } else {
+        self.generationsWithoutChange = 0;
       }
       return self.lastSolution = currentGenerationBestSolution.solution;
     };
