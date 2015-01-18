@@ -60,15 +60,15 @@
     };
 
     _breakEvolution = function(self, currentGenerationBestSolution) {
-      if (typeof self.stop_fn === "function" ? self.stop_fn(currentGenerationBestSolution, self.generationsWithoutChange) : void 0) {
-        true;
-      }
       if (self.lastSolution === currentGenerationBestSolution.solution) {
         self.generationsWithoutChange++;
       } else {
         self.generationsWithoutChange = 0;
       }
-      return self.lastSolution = currentGenerationBestSolution.solution;
+      self.lastSolution = currentGenerationBestSolution.solution;
+      if (typeof self.stop_fn === "function" ? self.stop_fn(currentGenerationBestSolution, self.generationsWithoutChange) : void 0) {
+        return true;
+      }
     };
 
     _assesPopulation = function(self, callback) {
