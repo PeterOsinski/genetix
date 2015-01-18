@@ -36,9 +36,6 @@
           return cb();
         });
       }, function(err) {
-        if (err) {
-          debug(err);
-        }
         debug('Population initialized');
         return callback();
       });
@@ -51,9 +48,6 @@
           return _startGeneration(self, cb);
         }
       }, function(err) {
-        if (err) {
-          debug(err);
-        }
         debug('Population evolved');
         return callback();
       });

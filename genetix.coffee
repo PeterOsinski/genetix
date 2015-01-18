@@ -30,7 +30,6 @@ class Engine
         self.populationPoll.push solution
         cb())
       (err) ->
-        debug(err) if err
         debug 'Population initialized'
         callback()
     )
@@ -44,7 +43,6 @@ class Engine
         if not self.stopped
           _startGeneration(self, cb)
       (err) ->
-        debug(err) if err
         debug 'Population evolved'
         callback()
     )
