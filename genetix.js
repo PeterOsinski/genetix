@@ -94,15 +94,18 @@
         newPopulation = [];
         self.generationParents = _.sortBy(self.generationResult, 'solution').reverse().slice(0, self.surviveGeneration);
         currentGenerationBestSolution = self.generationParents.slice(0, 1).pop();
+        if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution && self.previousPopulation.length > 0) {
+          self.populationPoll = self.previousPopulation;
+          debug('Rollback generation');
+          self.generation--;
+          callback();
+          return;
+        }
         debug('Population best solution: %d', currentGenerationBestSolution.solution);
         if (_breakEvolution(self, currentGenerationBestSolution) === true) {
           self.stopped = true;
           debug('Break evolution');
           return callback(true);
-        }
-        if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution && self.previousPopulation.length > 0) {
-          self.populationPoll = self.previousPopulation;
-          debug('Rollback generation');
         }
         self.lastGenerationBestSolution = currentGenerationBestSolution.solution;
         debug('Begin crossover');
