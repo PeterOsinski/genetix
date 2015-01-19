@@ -11,13 +11,12 @@
   Engine = (function() {
     var _arrRand, _assesPopulation, _breakEvolution, _evolve, _initPopulation, _startGeneration;
 
-    function Engine(populationSize, surviveGeneration, generations, mutatePropability, crossoverPropability, onlyBetterPopulation) {
+    function Engine(populationSize, surviveGeneration, generations, mutatePropability, crossoverPropability) {
       this.populationSize = populationSize;
       this.surviveGeneration = surviveGeneration;
       this.generations = generations;
       this.mutatePropability = mutatePropability != null ? mutatePropability : 0.2;
       this.crossoverPropability = crossoverPropability != null ? crossoverPropability : 0.8;
-      this.onlyBetterPopulation = onlyBetterPopulation != null ? onlyBetterPopulation : true;
       this.populationPoll = [];
       this.generationResult = [];
       this.generationParents = [];
@@ -101,15 +100,12 @@
           debug('Break evolution');
           return callback(true);
         }
-        if (self.onlyBetterPopulation === true) {
-          if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution && self.previousPopulation.length > 0) {
-            self.populationPoll = self.previousPopulation;
-            self.previousPopulation = [];
-            debug('Rollback generation');
-            self.generation--;
-            callback();
-            return;
-          }
+        if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution && self.previousPopulation.length > 0) {
+          self.populationPoll = self.previousPopulation;
+          debug('Rollback generation');
+          self.generation--;
+          callback();
+          return;
         }
         self.lastGenerationBestSolution = currentGenerationBestSolution.solution;
         debug('Begin crossover');

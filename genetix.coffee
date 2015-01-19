@@ -8,8 +8,7 @@ class Engine
     @surviveGeneration
     @generations,
     @mutatePropability = 0.2,
-    @crossoverPropability = 0.8,
-    @onlyBetterPopulation = true) ->
+    @crossoverPropability = 0.8) ->
 
     @populationPoll = []
     @generationResult = []
@@ -103,14 +102,12 @@ class Engine
         debug 'Break evolution'
         return callback true
 
-      if self.onlyBetterPopulation is true
-        if currentGenerationBestSolution.solution < self.lastGenerationBestSolution and self.previousPopulation.length > 0
-          self.populationPoll = self.previousPopulation
-          self.previousPopulation = []
-          debug 'Rollback generation'
-          self.generation--
-          callback()
-          return
+      if currentGenerationBestSolution.solution < self.lastGenerationBestSolution and self.previousPopulation.length > 0
+        self.populationPoll = self.previousPopulation
+        debug 'Rollback generation'
+        self.generation--
+        callback()
+        return
 
       self.lastGenerationBestSolution = currentGenerationBestSolution.solution
 
