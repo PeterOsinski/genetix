@@ -103,9 +103,6 @@
         if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution && self.previousPopulation.length > 0) {
           self.populationPoll = self.previousPopulation;
           debug('Rollback generation');
-          self.generation--;
-          callback();
-          return;
         }
         self.lastGenerationBestSolution = currentGenerationBestSolution.solution;
         debug('Begin crossover');
