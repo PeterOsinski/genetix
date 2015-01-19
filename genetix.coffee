@@ -16,6 +16,7 @@ class Engine
     @previousPopulation = []
     @generation = 0
     @stopped = false
+    @rollbackCount = 0
 
     @lastSolution = 0
     @generationsWithoutChange = 0
@@ -76,6 +77,10 @@ class Engine
 
   _startGeneration = (self, callback) ->
 
+    if self.rollbackCount > 20
+      debug 'Too much rollbacks'
+      return callback true
+
     self.generation++
     self.generationResult = []
     self.generationParents = []
@@ -95,19 +100,22 @@ class Engine
 
       currentGenerationBestSolution = self.generationParents.slice(0, 1).pop()
 
+      if currentGenerationBestSolution.solution < self.lastGenerationBestSolution and self.previousPopulation.length > 0
+        self.populationPoll = self.previousPopulation
+        debug 'Rollback generation'
+        self.generation--
+        self.rollbackCount++
+        callback()
+        return
+
+      self.rollbackCount = 0
+
       debug 'Population best solution: %d', currentGenerationBestSolution.solution
 
       if _breakEvolution(self, currentGenerationBestSolution) == true
         self.stopped = true
         debug 'Break evolution'
         return callback true
-
-      if currentGenerationBestSolution.solution < self.lastGenerationBestSolution and self.previousPopulation.length > 0
-        self.populationPoll = self.previousPopulation
-        debug 'Rollback generation'
-        self.generation--
-        callback()
-        return
 
       self.lastGenerationBestSolution = currentGenerationBestSolution.solution
 

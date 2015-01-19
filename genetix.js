@@ -23,6 +23,7 @@
       this.previousPopulation = [];
       this.generation = 0;
       this.stopped = false;
+      this.rollbackCount = 0;
       this.lastSolution = 0;
       this.generationsWithoutChange = 0;
     }
@@ -82,6 +83,10 @@
 
     _startGeneration = function(self, callback) {
       var children;
+      if (self.rollbackCount > 20) {
+        debug('Too much rollbacks');
+        return callback(true);
+      }
       self.generation++;
       self.generationResult = [];
       self.generationParents = [];
@@ -94,18 +99,20 @@
         newPopulation = [];
         self.generationParents = _.sortBy(self.generationResult, 'solution').reverse().slice(0, self.surviveGeneration);
         currentGenerationBestSolution = self.generationParents.slice(0, 1).pop();
+        if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution && self.previousPopulation.length > 0) {
+          self.populationPoll = self.previousPopulation;
+          debug('Rollback generation');
+          self.generation--;
+          self.rollbackCount++;
+          callback();
+          return;
+        }
+        self.rollbackCount = 0;
         debug('Population best solution: %d', currentGenerationBestSolution.solution);
         if (_breakEvolution(self, currentGenerationBestSolution) === true) {
           self.stopped = true;
           debug('Break evolution');
           return callback(true);
-        }
-        if (currentGenerationBestSolution.solution < self.lastGenerationBestSolution && self.previousPopulation.length > 0) {
-          self.populationPoll = self.previousPopulation;
-          debug('Rollback generation');
-          self.generation--;
-          callback();
-          return;
         }
         self.lastGenerationBestSolution = currentGenerationBestSolution.solution;
         debug('Begin crossover');
