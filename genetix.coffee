@@ -95,19 +95,19 @@ class Engine
 
       currentGenerationBestSolution = self.generationParents.slice(0, 1).pop()
 
-      if currentGenerationBestSolution.solution < self.lastGenerationBestSolution and self.previousPopulation.length > 0
-        self.populationPoll = self.previousPopulation
-        debug 'Rollback generation'
-        self.generation--
-        callback()
-        return
-
       debug 'Population best solution: %d', currentGenerationBestSolution.solution
 
       if _breakEvolution(self, currentGenerationBestSolution) == true
         self.stopped = true
         debug 'Break evolution'
         return callback true
+
+      if currentGenerationBestSolution.solution < self.lastGenerationBestSolution and self.previousPopulation.length > 0
+        self.populationPoll = self.previousPopulation
+        debug 'Rollback generation'
+        self.generation--
+        callback()
+        return
 
       self.lastGenerationBestSolution = currentGenerationBestSolution.solution
 
